@@ -1,10 +1,8 @@
 package com.example.todo_app.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,10 +47,17 @@ public class TodoController {
     @PutMapping("/{id}")
     public Todo updateTodo(@PathVariable Integer id, @RequestBody Todo updatedTodo) {
         return repository.findById(id).map(t -> {
+
+            if (updatedTodo.getTitle().isBlank()){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Title cannot be blank");
+            }
+
             t.setTitle(updatedTodo.getTitle());
             t.setCompleted(updatedTodo.isCompleted());
+
             return repository.save(t);  
-        }).orElseThrow();
+
+        }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Todo not found with id " + id));
         
     }
 
